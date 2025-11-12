@@ -8,22 +8,6 @@ El notebook `Desafio_1.ipynb` explora la vectorización de texto (TF-IDF), la si
 
 Se utilizó el dataset **20 Newsgroups**, cargado directamente desde `scikit-learn`. Este es un conjunto clásico para la clasificación de texto, compuesto por ~18,000 mensajes de foros distribuidos en 20 categorías temáticas (ej. `rec.autos`, `sci.med`, `talk.politics.misc`).
 
-## 🚀 Cómo ejecutar este notebook
-
-1.  Clonar este repositorio.
-2.  Crear y activar un entorno virtual:
-    ```bash
-    python -m venv venv
-    # En Windows (PowerShell):
-    .\venv\Scripts\Activate.ps1
-    # En Mac/Linux:
-    source venv/bin/activate
-    ```
-3.  Instalar las dependencias necesarias:
-    ```bash
-    pip install pandas numpy scikit-learn seaborn matplotlib ipykernel
-    ```
-4.  Abrir el notebook `Desafio_1.ipynb` en VS Code o Jupyter Lab y ejecutar las celdas.
 
 ---
 
