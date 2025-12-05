@@ -88,3 +88,51 @@ Se ajustaron los hiperparámetros del modelo `Word2Vec` (Skip-gram) para un corp
 * `min_count=3`
 * `window=5` (para capturar el contexto de la prosa)
 * `vector_size=10
+
+---
+
+# 🤖 Desafío 3: Modelos de Lenguaje a Nivel de Caracteres (RNN, LSTM, GRU)
+
+Este proyecto es el tercer desafío de la materia, centrado en la generación de texto utilizando modelos secuenciales profundos en PyTorch.
+
+El notebook `desafio_3.ipynb` implementa y compara tres arquitecturas de redes neuronales recurrentes: **RNN**, **LSTM** y **GRU**, entrenadas para predecir el siguiente caracter en una secuencia.
+
+## 📖 Dataset
+
+Como corpus, se utilizo el  **"Robinson Crusoe"** de Daniel Defoe, descargado de textos.info.
+
+## 🛠️ Desafíos y Metodología
+
+### 1. Implementación en PyTorch
+
+Se definieron tres clases de modelos (`RNNModel`, `LSTMModel`, `GRUModel`), todas compartiendo una estructura similar pero variando en la capa recurrente:
+*   **Embedding**: One-hot encoding de los caracteres.
+*   **Capa Recurrente**: RNN, LSTM o GRU.
+*   **Dropout**: Se incorporó una capa de `Dropout(0.1)` para regularización
+
+
+### 2. Entrenamiento
+
+Se creó una función de entrenamiento reutilizable `train_and_evaluate` que incluye:
+*   **Early Stopping**: Basado en la perplejidad del conjunto de validación (paciencia de 5 epochs).
+*   **Checkpointing**: Guardado automático del mejor modelo.
+*   **Visualización**: Gráficos de la evolución de la perplejidad.
+
+### 3. Generación de Texto (Beam Search)
+
+Se implementó un algoritmo de **Stochastic Beam Search** para generar texto, permitiendo controlar la aleatoriedad mediante un parámetro de **temperatura**.
+
+## 📊 Conclusiones y Resultados
+
+### Entrenamiento
+*   **RNN**: Mostró un aprendizaje más lento, requiriendo más épocas para converger.
+*   **LSTM y GRU**: Aprendieron significativamente más rápido, logrando mejores métricas en menos epochs. Sin embargo, mostraron una tendencia mayor al sobreajuste, activando el *early stopping* antes que el modelo **RNN**.
+*   **Regularización**: La inclusión de Dropout (0.1) fue clave para mejorar la generalización.
+
+### Generación
+*   A pesar de trabajar carácter por carácter, los modelos aprendieron implícitamente la morfología del lenguaje, generando en su gran mayoría palabras válidas en lugar de secuencias aleatorias.
+*   Los modelos LSTM y GRU produjeron textos sintácticamente más coherentes que la RNN simple.
+*   **Temperatura**:
+    *   `0.1` (Baja): Texto coherente y algo conservador.
+    *   `1.0` (Media): Buen balance entre coherencia y variedad.
+    *   `2.0` (Alta): Resultados más caóticos y "raros", como era de esperarse.
