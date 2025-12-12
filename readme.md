@@ -109,3 +109,12 @@ Se diseñó una arquitectura Seq2Seq clásica pero robusta:
 En lugar de un entrenamiento fijo, se implementó una estrategia dinámica:
 *   **Early Stopping**: Monitoreo de la `val_loss` con paciencia de 3 épocas para detener el entrenamiento cuando el modelo deja de aprender.
 *   **Model Checkpoint**: Guardado automático de los **mejores pesos** (`translator_model_best.weights.h5`), asegurando que el modelo final sea el óptimo y no simplemente el último.
+
+## 📊 Resultados e Inferencia
+
+Se construyó una **infraestructura de inferencia separada** que reutiliza los pesos entrenados pero desacopla el encoder y el decoder. Esto permite realizar la traducción paso a paso (*step-by-step decoding*), inyectando la predicción actual como entrada para el siguiente paso temporal hasta encontrar el token de fin de oración `<eos>`.
+
+**🚀 Modelo Pre-entrenado Disponible**
+El repositorio incluye el archivo `translator_model_best.weights.h5` (~76MB) con los pesos del modelo ya entrenado.
+*   **No es necesario re-entrenar:** El notebook detecta automáticamente si este archivo existe. Si es así, carga los pesos y salta directamente a la sección de inferencia, permitiendo probar las traducciones de inmediato.
+*   **Resultados:** El modelo es capaz de generar traducciones coherentes para oraciones dentro del dominio del dataset de entrenamiento.
