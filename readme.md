@@ -1,48 +1,3 @@
-# 📰 Proyecto 1: Clasificación de Texto con Naive Bayes (Dataset 20 Newsgroups)
-
-Este proyecto es el primer desafío de la matería Procesamiento de Lenguaje Natural (PLN).
-
-El notebook `Desafio_1.ipynb` explora la vectorización de texto (TF-IDF), la similaridad de documentos, la implementación de clasificadores (k-NN y Naive Bayes) y la optimización de hiperparámetros.
-
-## 📊 Dataset
-
-Se utilizó el dataset **20 Newsgroups**, cargado directamente desde `scikit-learn`. Este es un conjunto clásico para la clasificación de texto, compuesto por ~18,000 mensajes de foros distribuidos en 20 categorías temáticas (ej. `rec.autos`, `sci.med`, `talk.politics.misc`).
-
----
-
-## 🛠️ Desafíos y Metodología
-
-El notebook está dividido en los 4 puntos de la consigna:
-
-### 1. Análisis de Similaridad de Documentos
-
-Se vectorizó el corpus de `train` con `TfidfVectorizer`. Luego, se midió la similaridad coseno entre 5 documentos elegidos al azar y el resto del corpus para analizar la coherencia de las clases de los documentos más similares.
-
-### 2. Clasificador por Prototipos (k-NN)
-
-Se construyó un clasificador 1-NN ("prototipo") asignando la clase del vecino más cercano. Como extensión, se implementó un clasificador **k-NN** completo, probando un rango de $k$ (de 1 a 21) y comparando dos estrategias de votación:
-
-* **Voto Democrático (`weights='uniform'`)**
-* **Voto Calificado (`weights='distance'`)**
-
-Se generó un gráfico para comparar el F1-Score de ambas estrategias y encontrar el $k$ óptimo.
-
-### 3. Optimización de Naive Bayes (GridSearch)
-
-El objetivo era maximizar el `f1-score (macro)`:
-
-1.  Se comparó `MultinomialNB` vs. `ComplementNB`, identificando a `ComplementNB` como el modelo superior (probablemente por el desbalance de clases del dataset).
-2.  Se implementó un **`Pipeline`** de `scikit-learn` para encadenar el `TfidfVectorizer` y el `ComplementNB`.
-3.  Se utilizó **`GridSearchCV`** para encontrar la mejor combinación de hiperparámetros, previniendo el *data leakage* mediante validación cruzada.
-
-### 4. Similaridad de Palabras (Matriz Transpuesta)
-
-Finalmente, se transpuso la matriz TF-IDF (documento-término) para obtener una matriz (término-documento).
-
-* Cada fila se reinterpretó como un **vector de palabra** (un embedding simple).
-* Se analizó la similaridad coseno de 5 palabras (`god`, `car`, `president`, etc.) para estudiar las relaciones semánticas y de co-ocurrencia que el modelo fue capaz de capturar.
-
----
 
 # 📰 Proyecto 1: Clasificación de Texto con Naive Bayes (Dataset 20 Newsgroups)
 
@@ -122,17 +77,35 @@ Se creó una función de entrenamiento reutilizable `train_and_evaluate` que inc
 
 Se implementó un algoritmo de **Stochastic Beam Search** para generar texto, permitiendo controlar la aleatoriedad mediante un parámetro de **temperatura**.
 
-## 📊 Conclusiones y Resultados
+--- 
 
-### Entrenamiento
-*   **RNN**: Mostró un aprendizaje más lento, requiriendo más épocas para converger.
-*   **LSTM y GRU**: Aprendieron significativamente más rápido, logrando mejores métricas en menos epochs. Sin embargo, mostraron una tendencia mayor al sobreajuste, activando el *early stopping* antes que el modelo **RNN**.
-*   **Regularización**: La inclusión de Dropout (0.1) fue clave para mejorar la generalización.
+# 🌐 Desafío 4: Traductor Inglés-Español con LSTM (Seq2Seq)
 
-### Generación
-*   A pesar de trabajar carácter por carácter, los modelos aprendieron implícitamente la morfología del lenguaje, generando en su gran mayoría palabras válidas en lugar de secuencias aleatorias.
-*   Los modelos LSTM y GRU produjeron textos sintácticamente más coherentes que la RNN simple.
-*   **Temperatura**:
-    *   `0.1` (Baja): Texto coherente y algo conservador.
-    *   `1.0` (Media): Buen balance entre coherencia y variedad.
-    *   `2.0` (Alta): Resultados más caóticos y "raros", como era de esperarse.
+Este proyecto es el cuarto desafío de la materia, enfocado en la construcción de un modelo de traducción automática  utilizando una arquitectura **Encoder-Decoder**.
+
+El notebook `desafio_4.ipynb` implementa un modelo **Seq2Seq con capas LSTM** en Keras/TensorFlow, optimizado para manejar un volumen considerable de datos sin saturar los recursos de memoria.
+
+## 📖 Dataset
+
+Se utilizó el dataset del **Tatoeba Project** (par inglés-español), que consiste en miles de oraciones traducidas.
+Para este desafío, se logró escalar el entrenamiento a **25,000 pares de oraciones** (frente a las 6,000 originales), gracias a las optimizaciones de memoria implementadas.
+
+## 🛠️ Desafíos y Metodología
+
+### 1. Optimización de Memoria (El Cambio Crítico)
+
+El principal obstáculo técnico fue el consumo de RAM al intentar escalar el dataset. El enfoque original utilizaba *Categorical Crossentropy*, lo que obligaba a convertir las secuencias de salida a matrices *One-Hot* gigantescas ($N_{samples} \times L_{sequence} \times V_{vocab}$).
+
+**Solución:** Se migró a **`sparse_categorical_crossentropy`**. Esto permitió trabajar directamente con los índices enteros de los tokens, reduciendo drásticamente el uso de memoria y permitiendo cuadruplicar el tamaño del dataset de entrenamiento.
+
+### 2. Arquitectura del Modelo (Encoder-Decoder)
+
+Se diseñó una arquitectura Seq2Seq clásica pero robusta:
+*   **Embeddings Pre-entrenados**: Se utilizaron vectores **GloVe** (Twitter 27B, 50d) para inicializar la capa de embedding del encoder, aprovechando conocimiento semántico previo.
+*   **Encoder**: Una capa LSTM que procesa la secuencia de entrada y pasa sus estados internos ($h$, $c$) al decoder.
+*   **Decoder**: Una capa LSTM que genera la traducción paso a paso, condicionada por los estados del encoder y la palabra generada anteriormente.
+*   **Regularización**: Se incorporó **Dropout (0.2)** en las celdas LSTM para mitigar el sobreajuste, crucial dado que las oraciones son cortas y repetitivas.
+### 3. Entrenamiento Inteligente
+En lugar de un entrenamiento fijo, se implementó una estrategia dinámica:
+*   **Early Stopping**: Monitoreo de la `val_loss` con paciencia de 3 épocas para detener el entrenamiento cuando el modelo deja de aprender.
+*   **Model Checkpoint**: Guardado automático de los **mejores pesos** (`translator_model_best.weights.h5`), asegurando que el modelo final sea el óptimo y no simplemente el último.
